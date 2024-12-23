@@ -7,9 +7,9 @@ const randomName = (prefix: string) =>
   `${prefix} ${Math.floor(Math.random() * 1000)}`;
 
 async function main() {
-  const maxDepth = 3; // Define the maximum depth
+  const maxDepth = 2; // Define the maximum depth
   const rootMenusCount = 2; // Number of root menus
-  const childMenusPerParent = 3; // Number of children per menu
+  const childMenusPerParent = 2; // Number of children per menu
 
   const rootMenus = [];
 

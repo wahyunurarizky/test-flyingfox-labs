@@ -10,6 +10,8 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
+  app.enableCors();
+
   const config = new DocumentBuilder()
     .setTitle('Menu Management API')
     .setDescription('API for managing menus with hierarchical structure')

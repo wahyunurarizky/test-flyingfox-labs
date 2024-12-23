@@ -26,7 +26,29 @@ export class MenuService {
   }
 
   async create(data: CreateMenuDto) {
-    return this.prisma.menu.create({ data });
+    // Helper function to get the depth of a menu by parentId
+    const getDepth = async (
+      parentId: string | null,
+      depth: number = 0,
+    ): Promise<number> => {
+      if (!parentId) return depth;
+      const parentMenu = await this.prisma.menu.findUnique({
+        where: { id: parentId },
+      });
+      if (!parentMenu) return depth;
+      return getDepth(parentMenu.parentId, depth + 1);
+    };
+
+    // Calculate the depth for the new menu
+    const depth = await getDepth(data.parentId);
+
+    // Create the new menu with the calculated depth
+    return this.prisma.menu.create({
+      data: {
+        ...data,
+        depth,
+      },
+    });
   }
 
   async update(id: string, data: UpdateMenuDto) {
@@ -37,7 +59,30 @@ export class MenuService {
   }
 
   async findOne(id: string) {
-    return this.prisma.menu.findUnique({ where: { id } });
+    const menu = await this.prisma.menu.findUnique({ where: { id } });
+
+    if (!menu) {
+      return null;
+    }
+
+    // Fetch all menus to build the hierarchy
+    const menus = await this.prisma.menu.findMany();
+
+    // Helper function to build the hierarchy
+    const buildHierarchy = (parentId: string | null): any[] => {
+      return menus
+        .filter((menu) => menu.parentId === parentId)
+        .map((menu) => ({
+          ...menu,
+          children: buildHierarchy(menu.id), // Recursively build children
+        }));
+    };
+
+    // Attach children to the found menu
+    return {
+      ...menu,
+      children: buildHierarchy(menu.id),
+    };
   }
 
   async delete(id: string) {
